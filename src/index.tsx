@@ -1,6 +1,62 @@
 import { Hono } from "hono";
 
+interface RateLimit {
+  download_limit: number;
+  download_limit_used: number;
+  transfer_limit: number;
+  transfer_limit_used: number;
+}
+
+// Utility function for handling (type) errors
+function handleError(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  return "An unexpected error occurred";
+}
+
 const app = new Hono();
+
+// Array of allowed domains used for the proxy origin
+const allowedDomains = ["pixeldrain.com", "cdn.pixeldrain.com"];
+
+// Rate limit JSON response
+app.get("/limit", async (context) => {
+  try {
+    let response = await fetch("https://pixeldrain.com/api/misc/rate_limits");
+    let data = (await response.json()) as RateLimit;
+    return context.json(data);
+  } catch (error) {
+    return context.text(`Error: ${handleError(error)}`, 500);
+  }
+});
+
+// Handle PROXY request and response
+app.get("/proxy", async (c) => {
+  try {
+    let url = new URL(c.req.url);
+    let originUrl = url.searchParams.get("origin");
+
+    if (!originUrl) {
+      return c.text("Bad Request: Missing origin parameter", 400);
+    }
+
+    if (new URL(originUrl).protocol !== "https:") {
+      return c.text("Unauthorized: Only HTTPS protocol is allowed", 403);
+    }
+
+    console.log(originUrl);
+    if (!allowedDomains.includes(new URL(originUrl).hostname)) {
+      return c.text("Unauthorized: This domain is not in the whitelist", 403);
+    }
+
+    let newRequest = new Request(originUrl, c.req);
+    let response = await fetch(newRequest);
+    let newResponse = new Response(response.body, response);
+    newResponse.headers.set("Cache-Control", "no-store, max-age=0");
+    return newResponse;
+  } catch (error) {
+    return c.text(`Error: ${handleError(error)}`, 500);
+  }
+});
 
 // Index (root) TEXT response
 app.get("/", (c) => {
@@ -28,8 +84,6 @@ app.get("/quotes", async (c) => {
     );
   }
 });
-
-app.fire; // Not needed with Cloudflare Workers
 
 // Raw response
 app.get("/morning", (c) => {
@@ -70,5 +124,7 @@ const View = () => {
 app.get("/page", (c) => {
   return c.html(<View />);
 });
+
+app.fire; // Not needed with Cloudflare Workers
 
 export default app;
