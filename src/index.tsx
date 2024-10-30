@@ -14,7 +14,6 @@ function handleError(error: unknown): string {
 }
 
 const app = new Hono();
-
 // Array of allowed domains used for the proxy origin
 const allowedDomains = ["pixeldrain.com", "cdn.pixeldrain.com"];
 
@@ -30,25 +29,24 @@ app.get("/limit", async (context) => {
 });
 
 // Handle PROXY request and response
-app.get("/proxy", async (c) => {
+app.get("/", async (c) => {
   try {
     let url = new URL(c.req.url);
-    let originUrl = url.searchParams.get("origin");
-
-    if (!originUrl) {
-      return c.text("Bad Request: Missing origin parameter", 400);
+    let originURL = url.searchParams.get("origin"); // Get the origin URL from the query parameter
+    if (!originURL) {
+      return c.text("Server is running", 200);
     }
 
-    if (new URL(originUrl).protocol !== "https:") {
+    if (new URL(originURL).protocol !== "https:") {
       return c.text("Unauthorized: Only HTTPS protocol is allowed", 403);
     }
 
-    console.log(originUrl);
-    if (!allowedDomains.includes(new URL(originUrl).hostname)) {
+    console.log(originURL);
+    if (!allowedDomains.includes(new URL(originURL).hostname)) {
       return c.text("Unauthorized: This domain is not in the whitelist", 403);
     }
 
-    let newRequest = new Request(originUrl, c.req);
+    let newRequest = new Request(originURL, c.req);
     let response = await fetch(newRequest);
     let newResponse = new Response(response.body, response);
     newResponse.headers.set("Cache-Control", "no-store, max-age=0");
@@ -58,9 +56,15 @@ app.get("/proxy", async (c) => {
   }
 });
 
+/* 
+---------------
+----TESTING---- 
+---------------
+*/
+
 // Index (root) TEXT response
-app.get("/", (c) => {
-  return c.text("Hello Hono! TEXT");
+app.get("/test", (c) => {
+  return c.text("Hello Hono!");
 });
 
 // Fetch external & JSON response
@@ -83,11 +87,6 @@ app.get("/quotes", async (c) => {
       500
     );
   }
-});
-
-// Raw response
-app.get("/morning", (c) => {
-  return new Response("Good morning!");
 });
 
 // JSON response
