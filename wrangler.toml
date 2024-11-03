@@ -1,8 +1,9 @@
-name = "hono"
+name = "hono-proxy"
 main = "src/index.tsx"
 assets = { directory = "public" } # serve static files
-compatibility_date = "2024-10-27"
+compatibility_date = "2024-11-01"
 compatibility_flags = [ "nodejs_compat" ]
+# send_metrics = false # to disable sending metrics
 
 # [vars]
 # MY_VAR = "my-variable"

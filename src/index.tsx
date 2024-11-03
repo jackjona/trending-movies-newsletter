@@ -15,20 +15,10 @@ function handleError(error: unknown): string {
 
 const app = new Hono();
 // Array of allowed domains used for the proxy origin
-const allowedDomains = ["pixeldrain.com", "cdn.pixeldrain.com"];
+const allowedDomains = ["pixeldrain.com", "dl.buzzheavier.com"];
 
-// Rate limit JSON response
-app.get("/limit", async (context) => {
-  try {
-    let response = await fetch("https://pixeldrain.com/api/misc/rate_limits");
-    let data = (await response.json()) as RateLimit;
-    return context.json(data);
-  } catch (error) {
-    return context.text(`Error: ${handleError(error)}`, 500);
-  }
-});
-
-// Handle PROXY request and response
+// Handle proxy request and response
+// (c) means (context)
 app.get("/", async (c) => {
   try {
     let url = new URL(c.req.url);
@@ -40,15 +30,45 @@ app.get("/", async (c) => {
     if (new URL(originURL).protocol !== "https:") {
       return c.text("Unauthorized: Only HTTPS protocol is allowed", 403);
     }
-
-    console.log(originURL);
     if (!allowedDomains.includes(new URL(originURL).hostname)) {
       return c.text("Unauthorized: This domain is not in the whitelist", 403);
     }
+    // Use the Range header for resuming interrupted downloads
+    let range = c.req.header("Range");
+    let newRequest;
+    if (range) {
+      newRequest = new Request(originURL, {
+        headers: {
+          Range: range,
+        },
+      });
+    } else {
+      newRequest = new Request(originURL);
+    }
 
-    let newRequest = new Request(originURL, c.req);
     let response = await fetch(newRequest);
-    let newResponse = new Response(response.body, response);
+    let contentLength = response.headers.get("Content-Length");
+    if (contentLength === null) {
+      contentLength = "0"; // default to 0 if Content-Length is null
+    }
+
+    let newResponse = new Response(response.body, {
+      status: range ? 206 : 200,
+      headers: response.headers,
+    });
+
+    if (range) {
+      let bytes = range.replace(/bytes=/, "").split("-");
+      let start = parseInt(bytes[0], 10);
+      let end = bytes[1]
+        ? parseInt(bytes[1], 10)
+        : parseInt(contentLength, 10) - 1;
+      newResponse.headers.set(
+        "Content-Range",
+        `bytes ${start}-${end}/${contentLength}`
+      );
+    }
+
     newResponse.headers.set("Cache-Control", "no-store, max-age=0");
     return newResponse;
   } catch (error) {
@@ -56,47 +76,26 @@ app.get("/", async (c) => {
   }
 });
 
-/* 
----------------
-----TESTING---- 
----------------
-*/
-
-// Index (root) TEXT response
-app.get("/test", (c) => {
-  return c.text("Hello Hono!");
-});
-
-// Fetch external & JSON response
-app.get("/quotes", async (c) => {
+// Rate limit JSON response
+app.get("/limit", async (c) => {
   try {
-    const response = await fetch("https://animechan.io/api/v1/quotes/random");
-    const data = await response.json();
-
-    return c.json({
-      success: true,
-      date: new Date(),
-      data,
-    });
+    let response = await fetch("https://pixeldrain.com/api/misc/rate_limits");
+    let data = (await response.json()) as RateLimit;
+    return c.json(data);
   } catch (error) {
-    return c.json(
-      {
-        success: false,
-        error: "Failed to fetch external API",
-      },
-      500
-    );
+    return c.text(`Error: ${handleError(error)}`, 500);
   }
 });
 
-// JSON response
-app.get("/api/hello", (c) => {
-  return c.json({
-    success: true,
-    date: new Date(),
-    message: "Hello Hono! JSON",
-  });
+app.get("/origin", (c) => {
+  return c.text(`Use origin as a query parameter instead of as a path.`);
 });
+
+/* 
+----------------------
+----Testing Routes---- 
+----------------------
+*/
 
 // Dynamic query and param TEXT response
 app.get("/welcome/:name", (c) => {
@@ -124,6 +123,6 @@ app.get("/page", (c) => {
   return c.html(<View />);
 });
 
-app.fire; // Not needed with Cloudflare Workers
+// app.fire; // Not needed with Cloudflare Workers
 
 export default app;
