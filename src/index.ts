@@ -32,9 +32,22 @@ interface Env {
 type Bindings = {
   TMDB_KEY: string;
   RESEND_KEY: string;
+  API_KEY: string;
 };
 
 const app = new Hono<{ Bindings: Bindings }>();
+
+// Middleware to check API token in query
+app.use("/send", async (c, next) => {
+  const token = c.req.query("api-token");
+  if (!token) {
+    return c.json({ message: "API token is required" }, 403);
+  }
+  if (!token || token !== c.env.API_KEY) {
+    return c.json({ message: "Forbidden" }, 403);
+  }
+  await next();
+});
 
 // Function to fetch the trending movies of the week using the TMDB API
 async function getTrendingMovies(c: { env: Env }) {
