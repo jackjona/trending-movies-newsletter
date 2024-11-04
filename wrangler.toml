@@ -1,4 +1,4 @@
-name = "hono"
+name = "trending-movies"
 main = "src/index.ts"
 compatibility_date = "2024-11-02"
 
