@@ -125,7 +125,7 @@ const heading: CSSProperties = {
   fontSize: "32px",
   lineHeight: "1.3",
   fontWeight: "700",
-  color: "#7953cd",
+  color: "#7c3aed",
 };
 
 const hr: CSSProperties = {
@@ -150,8 +150,9 @@ const movieTitle: CSSProperties = {
 };
 
 const ratingStyle: CSSProperties = {
-  backgroundColor: "#daa520",
-  fontSize: "0.8rem",
+  color: "#ffffff",
+  backgroundColor: "#7c3aed",
+  fontSize: "0.75rem",
   borderRadius: "4px",
   padding: "2px",
   marginLeft: "6px",
