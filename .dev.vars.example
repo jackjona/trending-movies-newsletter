@@ -1,0 +1,4 @@
+# Rename this file to .dev.vars
+RESEND_KEY=<resend key>
+TMDB_KEY=<tmbd api key>
+API_KEY=<random secret or key>
