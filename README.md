@@ -2,6 +2,8 @@
 
 A serverless Hono app that displays the current trending movies and can send them to your email.
 
+Note: The deployed send route is not accessible without passing the API key as a query parameter.
+
 ## Built Using
 
 - [Hono](https://github.com/honojs/hon) - Web framework used
@@ -17,7 +19,8 @@ A serverless Hono app that displays the current trending movies and can send the
 ## Routes
 
 - `/` to see the email template preview
-- `/send?api-token=<api token>` (the api token is specified in the .dev.vars file) to send the email. Note: Change the from and to email in the code to send the email to your desired email address.
+- `/send?api-token=<api token>` (the api token is specified in the .dev.vars file) to send the email.
+  - Note: Change the from and to email in the code to send the email to your desired email address.
 
 ## To Develop Locally
 

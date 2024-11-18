@@ -61,14 +61,12 @@ export const MovieTemplate: React.FC<Readonly<MovieTemplateProps>> = ({
                   width="120px"
                   style={movieImage}
                 />
-
-                <Text style={movieTitle}>
-                  {movie.title}
+                <div style={titleContainer}>
+                  <Text style={movieTitle}>{movie.title}</Text>
                   <span style={ratingStyle}>
-                    {" "}
                     Rating: {Math.round(movie.vote_average * 10)}%
                   </span>
-                </Text>
+                </div>
                 <Text style={movieOverview}>{movie.overview}</Text>
                 <Link
                   href={`https://www.themoviedb.org/movie/${movie.id}`}
@@ -144,9 +142,19 @@ const movieImage: CSSProperties = {
   paddingTop: "10px",
 };
 
+const titleContainer: CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  textAlign: "center",
+  margin: "16px 0",
+};
+
 const movieTitle: CSSProperties = {
   fontSize: "1.25rem",
+  lineHeight: "24px",
   fontWeight: "bold",
+  margin: 0,
 };
 
 const ratingStyle: CSSProperties = {
@@ -154,7 +162,7 @@ const ratingStyle: CSSProperties = {
   backgroundColor: "#7c3aed",
   fontSize: "0.75rem",
   borderRadius: "4px",
-  padding: "2px",
+  padding: "2px 4px",
   marginLeft: "6px",
 };
 
