@@ -1,9 +1,9 @@
 import { Hono } from "hono";
 import { Resend } from "resend";
+import { renderToString } from "react-dom/server";
 import { MovieTemplate } from "./emails/movie-template";
 // import { EmailTemplate } from "./emails/email-template";
-import { renderToString } from "react-dom/server";
-import MockData from "./data/mock-data.json";
+// import MockData from "./data/mock-data.json";
 
 interface Movie {
   backdrop_path: string;
