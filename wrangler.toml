@@ -1,6 +1,7 @@
 name = "trending-movies"
 main = "src/index.ts"
-compatibility_date = "2024-11-02"
+compatibility_date = "2025-07-18"
+assets = { directory = "public" }
 
 # compatibility_flags = [ "nodejs_compat" ]
 
