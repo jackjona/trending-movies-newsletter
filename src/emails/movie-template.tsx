@@ -62,10 +62,10 @@ export const MovieTemplate: React.FC<Readonly<MovieTemplateProps>> = ({
                   style={movieImage}
                 />
                 <div style={titleContainer}>
-                  <Text style={movieTitle}>{movie.title}</Text>
                   <span style={ratingStyle}>
                     Rating: {Math.round(movie.vote_average * 10)}%
                   </span>
+                  <Text style={movieTitle}>{movie.title}</Text>
                 </div>
                 <Text style={movieOverview}>{movie.overview}</Text>
                 <Link
@@ -144,6 +144,7 @@ const movieImage: CSSProperties = {
 
 const titleContainer: CSSProperties = {
   display: "flex",
+  flexDirection: "column",
   alignItems: "center",
   justifyContent: "center",
   textAlign: "center",
@@ -154,6 +155,7 @@ const movieTitle: CSSProperties = {
   fontSize: "1.25rem",
   lineHeight: "24px",
   fontWeight: "bold",
+  paddingTop: "8px",
   margin: 0,
 };
 
